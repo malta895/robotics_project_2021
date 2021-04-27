@@ -43,11 +43,11 @@ private:
 
   boost::shared_ptr<ExactTimeSynchronizer> time_syncronizer_ptr;
 
-  const float initial_pose_x;
-  const float initial_pose_y;
-  const float initial_pose_theta;
+  const double initial_pose_x;
+  const double initial_pose_y;
+  const double initial_pose_theta;
 
-  float get_float_parameter(const std::string &parameter_key);
+  double get_double_parameter(const std::string &parameter_key);
 
 public:
   VelocityEstimator();
@@ -75,11 +75,11 @@ void VelocityEstimator::sync_and_publish_velocity_message(
   publisher.publish(velocity_message);
 }
 
-float VelocityEstimator::get_float_parameter(const std::string &parameter_key) {
+double VelocityEstimator::get_double_parameter(const std::string &parameter_key) {
 
   // we take the parameter from the node_handle
-  float parameter_value;
-  if (!node_handle.getParam(parameter_key, parameter_value)) {
+  double parameter_value;
+  if (!node_handle.getParam(parameter_key, parameter_value) ) {
     ROS_ERROR("Parameter %s not provided! Defaulting to 0",
               parameter_key.c_str());
     return 0;
@@ -90,9 +90,9 @@ float VelocityEstimator::get_float_parameter(const std::string &parameter_key) {
 // the constructor will just take the parameters and set them to the const
 // variables
 VelocityEstimator::VelocityEstimator()
-    : initial_pose_x(get_float_parameter("initial_pose_x")),
-      initial_pose_y(get_float_parameter("initial_pose_y")),
-      initial_pose_theta(get_float_parameter("initial_pose_theta")) {
+    : initial_pose_x(get_double_parameter("initial_pose_x")),
+      initial_pose_y(get_double_parameter("initial_pose_y")),
+      initial_pose_theta(get_double_parameter("initial_pose_theta")) {
 
   publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
       "/robot_twisted_stamped", 10);

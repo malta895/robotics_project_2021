@@ -1,8 +1,13 @@
 <launch>
 
-  <!-- initial pose of the robot TODO define -->
-  <param name="initial_pose_x" value=""/>
-  <param name="initial_pose_y" value=""/>
-  <param name="initial_pose_theta" value=""/>
+
+
+  <!-- initial pose of the robot -->
+  <!-- values taken from the first messages sent on /gt_pose from bag1.bag, when the robot is supposed to be still-->
+  <param name="initial_pose_x" type="double" value="-0.8321421146392822"/>
+  <param name="initial_pose_y" type="double" value="0.42636168003082275"/>
+  <param name="initial_pose_theta" type="double" value="0.324720174074173"/>
+
+
 
 </launch>
