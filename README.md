@@ -35,14 +35,8 @@ See the file `frames.pdf`
 
 ## Structure of the custom message
 
-The custom message that displays the distance is located at:  
-`src/distance_calculator/msg/Distance.msg`  
-and it's defined as follows:  
 
-    string flag 
-    float64 distance
-
-As required by project specifications, a `nan` distance is published when GPS signal is absent in at least one of the received sources.
-In this case the flag reports the message "NotAvailable".
 
 ## Other infos
+
+For the speed message synchronization I chose the `ExactTimePolicy` because in the bags the four speeds are always exactly synchronized. 
