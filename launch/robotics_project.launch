@@ -1,0 +1,8 @@
+<launch>
+
+  <!-- initial pose of the robot TODO define -->
+  <param name="initial_pose_x" value=""/>
+  <param name="initial_pose_y" value=""/>
+  <param name="initial_pose_theta" value=""/>
+
+</launch>
