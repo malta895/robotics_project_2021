@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+<!-- README this file is only useful to debug with rviz, it is not to be considered part of the project -->
+
+<param name="use_sim_time" value="true"/>
+
+<!-- create a father frame of world and odom, in order to be able to see both of them in rviz -->
+    <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 0 1 base_frame world 100" />
+    <node pkg="tf" type="static_transform_publisher" name="odom_transform" args="0 0 0 0 0 0 1 base_frame odom 100"/>
+
+
+</launch>
