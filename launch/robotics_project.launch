@@ -1,4 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <launch>
+
+  <!-- some data of the robot that may be useful -->
+  <param name="wheel_radius" type="double" value="0.1575"/>
+  <param name="real_baseline" type="double" value="0.583"/>
+
+  <!-- <param name="gear_ratio" type="double" value=""/> -->
+
+
 
 
 

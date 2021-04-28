@@ -5,8 +5,14 @@
 <param name="use_sim_time" value="true"/>
 
 <!-- create a father frame of world and odom, in order to be able to see both of them in rviz -->
-    <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 0 1 base_frame world 100" />
+
+<!-- bag 1-->
+    <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0.007820934057235718 -0.020113913342356682 -0.644089937210083 0.7646453380584717 base_frame world 100" />
     <node pkg="tf" type="static_transform_publisher" name="odom_transform" args="0 0 0 0 0 0 1 base_frame odom 100"/>
+
+<!-- bag 2 -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="world_transform" args="-2.4864 2.442696 0.5779188 -0.022165201604366302 0.010445614345371723 0.5335674285888672 1 base_frame world 100" /> -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="odom_transform" args="0 0 0 0 0 0 1 base_frame odom 100"/> -->
 
 
 </launch>

@@ -1,4 +1,5 @@
 #include "boost/bind/bind.hpp"
+#include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/forwards.h"
@@ -13,13 +14,10 @@
 #include "robotics_hw1/MotorSpeed.h"
 
 #include "geometry_msgs/TwistStamped.h"
+#include "math.h"
 #include <iomanip>
 #include <sstream>
 #include <string>
-
-// Speed message structure:
-// Header header
-// float64 rpm
 
 // I verified that in the bags the four messages have exactly synchronized
 // timestamps, thus I can use the ExactTime policy
@@ -47,6 +45,9 @@ private:
   const double initial_pose_y;
   const double initial_pose_theta;
 
+  const double real_baseline;
+  const double wheel_radius;
+
   double get_double_parameter(const std::string &parameter_key);
 
 public:
@@ -70,16 +71,38 @@ void VelocityEstimator::sync_and_publish_velocity_message(
   // the same because of ExactTimePolicy
   velocity_message.header = message_front_left->header;
 
-  //TODO calculate velocity
+  // Speed message structure:
+  // Header header
+  // float64 rpm
+  //
+  // formula for apparent baseline:
+  // \chi = frac{y_l - y_r}{B}
+
+// \omega = 2\pi\math{rpm}
+
+  // TODO calculate the speeds below
+  velocity_message.twist.angular.x = 0;
+  velocity_message.twist.angular.y = 0;
+  velocity_message.twist.angular.z = 0;
+
+  velocity_message.twist.linear.x = 0;
+  velocity_message.twist.linear.y = 0;
+  velocity_message.twist.linear.z = 0;
+
+
+
+
+
 
   publisher.publish(velocity_message);
 }
 
-double VelocityEstimator::get_double_parameter(const std::string &parameter_key) {
+double
+VelocityEstimator::get_double_parameter(const std::string &parameter_key) {
 
   // we take the parameter from the node_handle
   double parameter_value;
-  if (!node_handle.getParam(parameter_key, parameter_value) ) {
+  if (!node_handle.getParam(parameter_key, parameter_value)) {
     ROS_ERROR("Parameter %s not provided! Defaulting to 0",
               parameter_key.c_str());
     return 0;
@@ -92,7 +115,11 @@ double VelocityEstimator::get_double_parameter(const std::string &parameter_key)
 VelocityEstimator::VelocityEstimator()
     : initial_pose_x(get_double_parameter("initial_pose_x")),
       initial_pose_y(get_double_parameter("initial_pose_y")),
-      initial_pose_theta(get_double_parameter("initial_pose_theta")) {
+      initial_pose_theta(get_double_parameter("initial_pose_theta")),
+      wheel_radius(get_double_parameter("wheel_radius")),
+      real_baseline(get_double_parameter("initial_pose_theta"))
+
+{
 
   publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
       "/robot_twisted_stamped", 10);
@@ -127,6 +154,8 @@ int main(int argc, char **argv) {
   //     ROS_ERROR("%s", arg.c_str());
   //   return 1;
   // }
+
+
 
   VelocityEstimator odometry_calculator;
 
