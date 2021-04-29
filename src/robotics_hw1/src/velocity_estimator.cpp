@@ -20,7 +20,6 @@
 #include <sstream>
 #include <string>
 
-
 // I verified that in the bags the four messages have exactly synchronized
 // timestamps, thus I can use the ExactTime policy
 typedef message_filters::sync_policies::ExactTime<
@@ -40,25 +39,31 @@ private:
 
   boost::shared_ptr<ExactTimeSynchronizer> time_syncronizer_ptr;
 
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_left;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_right;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_left;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_rigt;
+  message_filters::Subscriber<nav_msgs::Odometry> subscriber_scout_odom;
+
   const double initial_pose_x;
   const double initial_pose_y;
   const double initial_pose_theta;
 
   const double real_baseline;
   const double wheel_radius;
+  const double gear_ratio;//TODO calibrate and use this instead of hardcoded 40
 
   double get_double_parameter(const std::string &parameter_key);
 
 public:
   VelocityEstimator();
 
-    void sync_and_publish_velocity_message(
+  void sync_and_publish_velocity_message(
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_right,
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_left,
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_right,
       const nav_msgs::OdometryConstPtr &scout_odom);
-
 };
 
 void VelocityEstimator::sync_and_publish_velocity_message(
@@ -68,7 +73,8 @@ void VelocityEstimator::sync_and_publish_velocity_message(
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_right,
     const nav_msgs::OdometryConstPtr &scout_odom) {
 
-  ROS_INFO("Seq %d, rpm are %f", motor_speed_front_left->header.seq, motor_speed_front_left->rpm);
+  ROS_INFO("Seq %d, rpm are %f", motor_speed_front_left->header.seq,
+           motor_speed_front_left->rpm);
 
   if (motor_speed_front_left->rpm != motor_speed_rear_left->rpm) {
     ROS_WARN("Front left rpm value %f is different from rear left rpm value %f",
@@ -99,20 +105,25 @@ void VelocityEstimator::sync_and_publish_velocity_message(
   // TODO calculate the speeds below
   //\omega = 2pi * rpm/60
 
-  double omega_l = (2 * pi) * (motor_speed_front_left->rpm / 60);
+  double omega_l = (2 * pi) * (-motor_speed_front_left->rpm / 60);
+  omega_l /= 40;// TODO calibrator (package?) that from odometry calculates the ratio and the baseline.
   double omega_r = (2 * pi) * (motor_speed_front_right->rpm / 60);
+  omega_r /= 40;
   double odom_omega_z = scout_odom->twist.twist.angular.z;
-  double apparent_baseline = (-omega_l + omega_r) / odom_omega_z;
+  double apparent_baseline =
+      (-(omega_l * wheel_radius) + (omega_r * wheel_radius)) / odom_omega_z;
 
   velocity_message.twist.linear.x =
-      (omega_l * wheel_radius + omega_r * wheel_radius) / 2;
+      ((omega_l * wheel_radius) + (omega_r * wheel_radius)) / 2;
   velocity_message.twist.linear.y =
       apparent_baseline; // FIXME just for debugging, remove this
-  velocity_message.twist.linear.z = 0;
+  velocity_message.twist.linear.z =
+      apparent_baseline /
+      real_baseline; //\chi FIXME just for debugging, remove this
 
-  velocity_message.twist.angular.x = 0;
-  velocity_message.twist.angular.y = 0;
-  velocity_message.twist.angular.z = 0;
+  velocity_message.twist.angular.x = omega_l;
+  velocity_message.twist.angular.y = omega_r;
+  // velocity_message.twist.angular.z = 0;
 
   publisher.publish(velocity_message);
 }
@@ -151,19 +162,12 @@ VelocityEstimator::VelocityEstimator()
 
   // subscribe to the motor speed topics TODO remove hard coding and put
   // parameters/argvs with topics names
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_left;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_right;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_left;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_rigt;
-  message_filters::Subscriber<nav_msgs::Odometry> subscriber_scout_odom;
-
 
   subscriber_front_right.subscribe(node_handle, "/motor_speed_fr", 100);
   subscriber_front_left.subscribe(node_handle, "/motor_speed_fl", 100);
   subscriber_rear_rigt.subscribe(node_handle, "/motor_speed_rr", 100);
   subscriber_rear_left.subscribe(node_handle, "/motor_speed_rl", 100);
   subscriber_scout_odom.subscribe(node_handle, "/scout_odom", 100);
-
 
   // publish the topic
   publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
