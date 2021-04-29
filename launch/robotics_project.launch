@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
 
-  <!-- some data of the robot that may be useful -->
+  <!-- some data of the robot that may be useful, taken from project specification -->
   <param name="wheel_radius" type="double" value="0.1575"/>
   <param name="real_baseline" type="double" value="0.583"/>
 
+
+  <!-- TODO find the apparent baseline -->
+  <!-- apparent_baseline = 2y_0 =  -->
+  <!-- <param name="apparent_baseline" type="double" value=""/> -->
+
   <!-- <param name="gear_ratio" type="double" value=""/> -->
-
-
-
 
 
   <!-- initial pose of the robot -->
@@ -16,6 +18,9 @@
   <param name="initial_pose_x" type="double" value="-0.8321421146392822"/>
   <param name="initial_pose_y" type="double" value="0.42636168003082275"/>
   <param name="initial_pose_theta" type="double" value="0.324720174074173"/>
+
+  <!-- launch velocity estimator node -->
+  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator"/>
 
 
 

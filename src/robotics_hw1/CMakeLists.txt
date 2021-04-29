@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(robotics_hw1)
 
+# set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+# set(CMAKE_C_COMPILER "/usr/bin/clang")
+
 find_package(
   catkin REQUIRED
   COMPONENTS
