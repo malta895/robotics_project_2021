@@ -129,7 +129,6 @@ void VelocityEstimator::sync_and_publish_velocity_message(
   velocity_message.twist.angular.z =
       (-(omega_l * wheel_radius) + (omega_r * wheel_radius)) /
       apparent_baseline;
-  ;
 
   publisher.publish(velocity_message);
 }
@@ -168,7 +167,7 @@ VelocityEstimator::VelocityEstimator(
 }
 
 double get_double_parameter(const std::string &parameter_key,
-                            ros::NodeHandle &node_handle) {
+                            const ros::NodeHandle &node_handle) {
   // this is just an helper function used to retrieve the double params from ROS
   // environment. I need this because in C++ I can initialize const in classes
   // only by calling a function in the member initializer list of the
