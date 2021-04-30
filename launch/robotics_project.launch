@@ -5,6 +5,12 @@
   <param name="wheel_radius" type="double" value="0.1575"/>
   <param name="real_baseline" type="double" value="0.583"/>
 
+  <!-- TODO fix with a less approximate value-->
+  <param name="apparent_baseline" type="double" value="1"/>
+  <param name="gear_ratio" type="double" value="0.025"/>
+
+
+
 
   <!-- TODO find the apparent baseline -->
   <!-- apparent_baseline = 2y_0 =  -->
