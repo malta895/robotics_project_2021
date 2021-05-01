@@ -40,6 +40,9 @@ include ${catkin_INCLUDE_DIRS}
 add_executable(velocity_estimator src/velocity_estimator.cpp)
 target_link_libraries(velocity_estimator ${catkin_LIBRARIES})
 add_dependencies(velocity_estimator ${catkin_EXPORTED_TARGETS})
-# add_dependencies(velocity_estimator ${PROJECT_NAME}_gencfg)
 add_dependencies(velocity_estimator ${${PROJECT_NAME}_EXPORTED_TARGETS})
-# add_dependencies(velocity_estimator velocity_estimator_generate_messages_cpp)
+
+add_executable(parameters_calibrator src/parameters_calibrator.cpp)
+target_link_libraries(parameters_calibrator ${catkin_LIBRARIES})
+add_dependencies(parameters_calibrator ${catkin_EXPORTED_TARGETS})
+add_dependencies(parameters_calibrator ${${PROJECT_NAME}_EXPORTED_TARGETS})

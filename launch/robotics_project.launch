@@ -5,9 +5,9 @@
   <param name="wheel_radius" type="double" value="0.1575"/>
   <param name="real_baseline" type="double" value="0.583"/>
 
-  <!-- TODO fix with a less approximate value-->
-  <param name="apparent_baseline" type="double" value="1"/>
-  <param name="gear_ratio" type="double" value="0.025"/>
+  <!-- found with odometry-->
+  <param name="apparent_baseline" type="double" value="1.022014"/>
+  <param name="gear_ratio" type="double" value="0.026173"/>
 
 
 
@@ -27,6 +27,7 @@
 
   <!-- launch velocity estimator node -->
   <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator"/>
+  <!-- <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/> -->
 
 
 </launch>
