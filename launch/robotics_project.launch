@@ -6,8 +6,8 @@
   <param name="real_baseline" type="double" value="0.583"/>
 
   <!-- found with odometry-->
-  <param name="apparent_baseline" type="double" value="1.022014"/>
-  <param name="gear_ratio" type="double" value="0.026173"/>
+  <param name="apparent_baseline" type="double" value="1.02201433"/>
+  <param name="gear_ratio" type="double" value="0.02617276"/>
 
 
 
@@ -19,15 +19,20 @@
   <!-- <param name="gear_ratio" type="double" value=""/> -->
 
 
-  <!-- initial pose of the robot -->
-  <!-- values taken from the first messages sent on /gt_pose from bag1.bag, when the robot is supposed to be still-->
-  <param name="initial_pose_x" type="double" value="-0.8321421146392822"/>
-  <param name="initial_pose_y" type="double" value="0.42636168003082275"/>
-  <param name="initial_pose_theta" type="double" value="0.324720174074173"/>
+  <!-- initial pose of the robot, taken from gt_pose of bag1 -->
+  <!-- <param name="initial_pose_x" type="double" value="-0.8321421146392822"/> -->
+  <!-- <param name="initial_pose_y" type="double" value="0.42636168003082275"/> -->
+  <!-- <param name="initial_pose_theta" type="double" value="0.324720174074173"/> -->
+
+
+  <!-- initial pose of the robot, taken from odom of bag1 -->
+  <param name="initial_pose_x" type="double" value="0"/>
+  <param name="initial_pose_y" type="double" value="0"/>
+  <param name="initial_pose_theta" type="double" value="0"/>
 
   <!-- launch velocity estimator node -->
-  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator"/>
-  <!-- <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/> -->
+  <!-- <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator"/> -->
+  <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/>
 
 
 </launch>
