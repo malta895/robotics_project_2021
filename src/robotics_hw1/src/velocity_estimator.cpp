@@ -32,7 +32,7 @@ typedef message_filters::Synchronizer<ExactTimePolicy> ExactTimeSynchronizer;
 // let's take the double value of pi from boost library
 const double pi = boost::math::constants::pi<double>();
 
-class eterCalibrator {
+class VelocityEstimator {
 private:
   const ros::NodeHandle node_handle;
 
@@ -55,7 +55,7 @@ private:
   const double gear_ratio;
 
 public:
-  ParameterCalibrator(ros::NodeHandle &node_handle, const double &initial_pose_x,
+  VelocityEstimator(ros::NodeHandle &node_handle, const double &initial_pose_x,
                     const double &initial_pose_y,
                     const double &initial_pose_theta,
                     const double &wheel_radius, const double &real_baseline,
@@ -68,7 +68,7 @@ public:
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_right);
 };
 
-void ParameterCalibrator::sync_and_publish_velocity_message(
+void VelocityEstimator::sync_and_publish_velocity_message(
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_right,
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_left,
@@ -133,7 +133,7 @@ void ParameterCalibrator::sync_and_publish_velocity_message(
   publisher.publish(velocity_message);
 }
 
-ParameterCalibrator::ParameterCalibrator(
+VelocityEstimator::VelocityEstimator(
     ros::NodeHandle &node_handle, const double &initial_pose_x,
     const double &initial_pose_y, const double &initial_pose_theta,
     const double &wheel_radius, const double &real_baseline,
@@ -162,7 +162,7 @@ ParameterCalibrator::ParameterCalibrator(
 
   // register the callback. One placeholder for each function argument
   time_syncronizer_ptr->registerCallback(
-      boost::bind(&ParameterCalibrator::sync_and_publish_velocity_message, this,
+      boost::bind(&VelocityEstimator::sync_and_publish_velocity_message, this,
                   _1, _2, _3, _4));
 }
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
   // }
 
   ros::NodeHandle node_handle;
-  ParameterCalibrator odometry_calculator(
+  VelocityEstimator odometry_calculator(
       node_handle, get_double_parameter("initial_pose_x", node_handle),
       get_double_parameter("initial_pose_y", node_handle),
       get_double_parameter("initial_pose_theta", node_handle),
