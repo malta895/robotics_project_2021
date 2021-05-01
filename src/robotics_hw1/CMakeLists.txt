@@ -17,6 +17,8 @@ find_package(
 add_message_files(
   FILES
     MotorSpeed.msg
+    CalibratedParamsOdom.msg
+    CalibratedParamsGtPose.msg
 )
 
 generate_messages(
