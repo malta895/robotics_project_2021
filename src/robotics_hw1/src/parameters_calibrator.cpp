@@ -229,7 +229,7 @@ void ParameterCalibrator::calibrate_with_gt_pose_callback(
     // if (current_apparent_baseline > 0.900000l &&
     //     current_apparent_baseline < 1.100000l){
     if (current_apparent_baseline > real_baseline &&
-        current_apparent_baseline <= 2.00000l) {
+        current_apparent_baseline <= 1.60000l) {
       pose_apparent_baseline =
           ((pose_apparent_baseline * count_pose_apparent_baseline) +
            current_apparent_baseline);
