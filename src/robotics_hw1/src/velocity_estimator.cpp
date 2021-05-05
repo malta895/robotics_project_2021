@@ -78,12 +78,12 @@ void VelocityEstimator::sync_and_publish_velocity_message(
            motor_speed_front_left->rpm);
 
   if (motor_speed_front_left->rpm != motor_speed_rear_left->rpm) {
-    ROS_WARN("Front left rpm value %f is different from rear left rpm value %f",
+    ROS_INFO("Front left rpm value %f is different from rear left rpm value %f",
              motor_speed_front_left->rpm, motor_speed_rear_left->rpm);
   }
 
   if (motor_speed_front_right->rpm != motor_speed_rear_right->rpm) {
-    ROS_WARN(
+    ROS_INFO(
         "Front right rpm value %f is different from rear right rpm value %f",
         motor_speed_front_right->rpm, motor_speed_rear_right->rpm);
   }
@@ -194,18 +194,19 @@ int main(int argc, char **argv) {
   ros::V_string args;
   ros::removeROSArgs(argc, argv, args);
 
-  // TODO see if we need to receive some args. Otherwise, remove this code
   // we should receive:
   // program name
-  // object id (e.g. front or obs)
-  // if (args.size() != 2) {
-  //   ROS_ERROR("tf_publisher: Usage: %s object_id", argv[0]);
-  //   ROS_ERROR("tf_publisher: Instead you provided %lu argument(s): ",
-  //             args.size());
-  //   for (std::string arg : args)
-  //     ROS_ERROR("%s", arg.c_str());
-  //   return 1;
-  // }
+  // a string which is either scout_odom or gt_pose, to decide which estimated baseline and gear ratio use
+  if (args.size() != 2) {
+    ROS_ERROR("tf_publisher: Usage: %s pose_or_odom", argv[0]);
+    ROS_ERROR("tf_publisher: Instead you provided %lu argument(s): ",
+              args.size());
+    for (std::string arg : args)
+      ROS_ERROR("%s", arg.c_str());
+    return 1;
+  }
+
+  std::string pose_or_odom = args[1];
 
   ros::NodeHandle node_handle;
   VelocityEstimator odometry_calculator(
@@ -214,8 +215,8 @@ int main(int argc, char **argv) {
       get_double_parameter("initial_pose_theta", node_handle),
       get_double_parameter("wheel_radius", node_handle),
       get_double_parameter("real_baseline", node_handle),
-      get_double_parameter("gear_ratio", node_handle),
-      get_double_parameter("apparent_baseline", node_handle));
+      get_double_parameter("gear_ratio_from_" + pose_or_odom, node_handle),
+      get_double_parameter("apparent_baseline_from_" + pose_or_odom, node_handle));
 
   ros::spin();
 
