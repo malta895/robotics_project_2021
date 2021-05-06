@@ -2,9 +2,9 @@
 <package format="2">
   <name>robotics_hw1</name>
   <version>0.0.0</version>
-  <description>Robotics 2020/21 - Package for first robotics project</description>
-  <maintainer email="paolo.cudrano@polimi.it">Paolo Cudrano</maintainer>
-  <author email="paolo.cudrano@polimi.it">Paolo Cudrano</author>
+  <description>Robotics 2020/21 - First project</description>
+  <maintainer email="luca.maltagliati@mail.polimi.it">Luca Maltagliati </maintainer>
+  <author email="luca.maltagliati@polimi.it">Luca Maltagliati</author>
   <license>TODO</license>
 
   <!-- The *depend tags are used to specify dependencies -->

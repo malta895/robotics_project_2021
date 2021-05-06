@@ -12,6 +12,7 @@ find_package(
   message_filters
     nav_msgs
     std_msgs
+  dynamic_reconfigure
 )
 
 add_message_files(
@@ -19,6 +20,7 @@ add_message_files(
     MotorSpeed.msg
     CalibratedParamsOdom.msg
     CalibratedParamsGtPose.msg
+    IntegratedOdometry.msg
 )
 
 generate_messages(
@@ -28,12 +30,18 @@ generate_messages(
     geometry_msgs
 )
 
+generate_dynamic_reconfigure_options (
+  cfg/VelocityEstimator.cfg
+  )
+
+
 catkin_package(
   CATKIN_DEPENDS
     std_msgs
     nav_msgs
     message_runtime
 )
+
 
 include_directories(
 include ${catkin_INCLUDE_DIRS}
@@ -43,6 +51,7 @@ add_executable(velocity_estimator src/velocity_estimator.cpp)
 target_link_libraries(velocity_estimator ${catkin_LIBRARIES})
 add_dependencies(velocity_estimator ${catkin_EXPORTED_TARGETS})
 add_dependencies(velocity_estimator ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(velocity_estimator ${PROJECT_NAME}_gencfg)
 
 add_executable(parameters_calibrator src/parameters_calibrator.cpp)
 target_link_libraries(parameters_calibrator ${catkin_LIBRARIES})
