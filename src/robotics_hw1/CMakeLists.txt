@@ -13,6 +13,7 @@ find_package(
     nav_msgs
     std_msgs
   dynamic_reconfigure
+  tf2_ros
 )
 
 add_message_files(
@@ -40,6 +41,7 @@ catkin_package(
     std_msgs
     nav_msgs
     message_runtime
+    tf2_ros
 )
 
 

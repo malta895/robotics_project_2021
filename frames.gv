@@ -1,0 +1,8 @@
+digraph G {
+"base_frame" -> "world"[label=" Broadcaster: /world_transform\nAverage rate: 10.127\nBuffer length: 4.937\nMost recent transform: 1617792127.178\nOldest transform: 1617792122.241\n"];
+"base_frame" -> "odom"[label=" Broadcaster: /odom_transform\nAverage rate: 10.127\nBuffer length: 4.937\nMost recent transform: 1617792127.178\nOldest transform: 1617792122.241\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1617792127.1387603"[ shape=plaintext ] ;
+}->"base_frame";
+}

@@ -49,6 +49,8 @@ private:
   ros::Publisher odometry_publisher;
   ros::Publisher odometry_custom_message_publisher;
 
+  tf2_ros::TransformBroadcaster transform_broadcaster;
+
   boost::shared_ptr<ExactTimeSynchronizer> time_syncronizer_ptr;
 
   message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_left;
@@ -61,7 +63,8 @@ private:
       dynamic_reconfigure_server_ptr;
 
   const geometry_msgs::Pose initial_pose;
-  geometry_msgs::PoseStamped last_pose;
+  geometry_msgs::PoseStamped last_pose_stamped;
+  bool is_first_measurement = true;
 
   const double real_baseline;
   const double apparent_baseline;
@@ -80,7 +83,8 @@ public:
                     const double &initial_pose_y,
                     const double &initial_pose_theta,
                     const double &wheel_radius, const double &real_baseline,
-                    const double &gear_ratio, const double &apparent_baseline);
+                    const double &gear_ratio, const double &apparent_baseline,
+                    std::string &pose_or_odom);
 
   void motorsSyncCallback(
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
@@ -106,56 +110,66 @@ void VelocityEstimator::dynamicReconfigureCallback(
 nav_msgs::Odometry
 VelocityEstimator::calculateOdometry(const double &linear_speed,
                                      const double &angular_speed,
-                                     const std_msgs::Header &header) {
+                                     const std_msgs::Header &current_header) {
   nav_msgs::Odometry calculated_odometry;
-  calculated_odometry.header = header;
+  calculated_odometry.header = current_header;
+  calculated_odometry.header.frame_id = "odom";
+  calculated_odometry.child_frame_id = "base_link";
 
-  const double delta_time = (header.stamp - last_pose.header.stamp).toSec();
+  const double delta_time =
+      (current_header.stamp - last_pose_stamped.header.stamp).toSec();
+
+  // Let's get theta angle from the orientation quaternion
+  tf::Quaternion quaternion(last_pose_stamped.pose.orientation.x,
+                            last_pose_stamped.pose.orientation.y,
+                            last_pose_stamped.pose.orientation.z,
+                            last_pose_stamped.pose.orientation.w);
+  double roll, pitch, yaw;
+  tf::Matrix3x3 quaternion_matrix(quaternion);
+  quaternion_matrix.getRPY(roll, pitch, yaw);
+
+  double &theta = yaw;
 
   switch (odometry_integration_method) {
   case euler:
 
     // x_{k+1}
     calculated_odometry.pose.pose.position.x =
-        last_pose.pose.position.x +
-        linear_speed * delta_time * last_pose.pose.orientation.w;
+        last_pose_stamped.pose.position.x +
+        linear_speed * delta_time * std::cos(theta);
 
     // y_{k+1}
     calculated_odometry.pose.pose.position.y =
-        last_pose.pose.position.y +
-        linear_speed * delta_time * last_pose.pose.orientation.z;
+        last_pose_stamped.pose.position.y +
+        linear_speed * delta_time * std::sin(theta);
 
     // theta_{k+1}
-    calculated_odometry.pose.pose.orientation = tf::createQuaternionMsgFromYaw(
-        std::asin(last_pose.pose.orientation.z) + angular_speed * delta_time);
+    calculated_odometry.pose.pose.orientation =
+        tf::createQuaternionMsgFromYaw(theta + angular_speed * delta_time);
 
     break;
   case rungeKutta:
+
     // x_{k+1}
     calculated_odometry.pose.pose.position.x =
-        last_pose.pose.position.x +
+        last_pose_stamped.pose.position.x +
         linear_speed * delta_time *
-            (last_pose.pose.orientation.w *
-                 std::cos(angular_speed * delta_time / 2) -
-             last_pose.pose.orientation.z *
-                 std::sin(angular_speed * delta_time / 2));
+            std::cos(theta + (angular_speed * delta_time / 2));
 
     // y_{k+1}
     calculated_odometry.pose.pose.position.y =
-        last_pose.pose.position.y +
+        last_pose_stamped.pose.position.y +
         linear_speed * delta_time *
-            (last_pose.pose.orientation.z *
-                 std::cos(angular_speed * delta_time / 2) +
-             last_pose.pose.orientation.w *
-                 std::sin(angular_speed * delta_time / 2));
+            std::sin(theta + (angular_speed * delta_time / 2));
 
     // theta_{k+1}
-    calculated_odometry.pose.pose.orientation = tf::createQuaternionMsgFromYaw(
-        std::asin(last_pose.pose.orientation.z) + angular_speed * delta_time);
+    calculated_odometry.pose.pose.orientation =
+        tf::createQuaternionMsgFromYaw(theta + angular_speed * delta_time);
+
     break;
   }
 
-  // the speed is assumed to be equal to the previous one (?)
+  // the speed is assumed to be equal to the previous one
   calculated_odometry.twist.twist.linear.x = linear_speed;
   calculated_odometry.twist.twist.angular.z = angular_speed;
   return calculated_odometry;
@@ -187,6 +201,12 @@ void VelocityEstimator::motorsSyncCallback(
   // the same because of ExactTimePolicy
   velocity_message.header = motor_speed_front_left->header;
 
+  if (is_first_measurement) {
+    last_pose_stamped.header = velocity_message.header;
+    last_pose_stamped.pose = initial_pose;
+    is_first_measurement = false;
+  }
+
   // Since often on same timestamps the rpm of the front and back wheels on the
   // same side differ, maybe because of measurement errors or due the fact that
   // it is not an ideal robot, we take the mean of the two measurements
@@ -215,8 +235,20 @@ void VelocityEstimator::motorsSyncCallback(
 
   twist_stamped_publisher.publish(velocity_message);
 
-  calculateOdometry(linear_speed, angular_speed,
-                    motor_speed_front_left->header);
+  const nav_msgs::Odometry odometry_message = calculateOdometry(
+      linear_speed, angular_speed, motor_speed_front_left->header);
+
+  odometry_publisher.publish(odometry_message);
+
+  robotics_hw1::IntegratedOdometry integrated_odometry_custom_message;
+  integrated_odometry_custom_message.odom = odometry_message;
+  integrated_odometry_custom_message.method.data =
+      odometry_integration_method_name[odometry_integration_method];
+
+  odometry_custom_message_publisher.publish(integrated_odometry_custom_message);
+
+  last_pose_stamped.pose = odometry_message.pose.pose;
+  last_pose_stamped.header = odometry_message.header;
 }
 
 geometry_msgs::Pose pose_from_x_y_theta(const double &x, const double &y,
@@ -234,7 +266,8 @@ VelocityEstimator::VelocityEstimator(
     ros::NodeHandle &node_handle, const double &initial_pose_x,
     const double &initial_pose_y, const double &initial_pose_theta,
     const double &wheel_radius, const double &real_baseline,
-    const double &gear_ratio, const double &apparent_baseline)
+    const double &gear_ratio, const double &apparent_baseline,
+    std::string &pose_or_odom)
     : node_handle(node_handle),
       initial_pose(pose_from_x_y_theta(initial_pose_x, initial_pose_y,
                                        initial_pose_theta)),
@@ -254,8 +287,8 @@ VelocityEstimator::VelocityEstimator(
       "/robot_twisted_stamped", 10);
 
   // TODO probably this is useless, the last one is enough
-  odometry_publisher =
-      node_handle.advertise<nav_msgs::Odometry>("/scout_integrated_odom", 10);
+  odometry_publisher = node_handle.advertise<nav_msgs::Odometry>(
+      "/scout_integrated_odom/from_" + pose_or_odom, 10);
 
   odometry_custom_message_publisher =
       node_handle.advertise<robotics_hw1::IntegratedOdometry>(
@@ -328,8 +361,8 @@ int main(int argc, char **argv) {
       getDoubleParameter("wheel_radius", node_handle),
       getDoubleParameter("real_baseline", node_handle),
       getDoubleParameter("gear_ratio_from_" + pose_or_odom, node_handle),
-      getDoubleParameter("apparent_baseline_from_" + pose_or_odom,
-                         node_handle));
+      getDoubleParameter("apparent_baseline_from_" + pose_or_odom, node_handle),
+      pose_or_odom);
 
   ros::spin();
 
