@@ -1,4 +1,4 @@
-# Robotics Project 2019/2020 | First delivery
+# Robotics Project 2020/2021 | First delivery
 
 | Name             | Polimi ID | Email                           |
 | ---              | ----      | ---                             |
@@ -43,6 +43,8 @@ std_msgs/String method
 ```
 
 The field `method` can either have the value "Euler" or "Runge-Kutta", according to the method used to integrate the odometry.
+
+The message is published under the topic `/scout_integrated_odom_custom`
 
 ## Other infos
 
