@@ -227,9 +227,9 @@ void ParameterCalibrator::calibrate_with_gt_pose_callback(
     }
 
     // if (current_apparent_baseline > 0.900000l &&
-    //     current_apparent_baseline < 1.100000l){
-    if (current_apparent_baseline > real_baseline &&
-        current_apparent_baseline <= 1.60000l) {
+    //     current_apparent_baseline < 1.1000 00l){
+    if (current_apparent_baseline > 1.0 && //I know it is bigger than 1, lower values are probably "dirty"
+        current_apparent_baseline < 1.034) {// as a upper bound I put the odometry value
       pose_apparent_baseline =
           ((pose_apparent_baseline * count_pose_apparent_baseline) +
            current_apparent_baseline);
