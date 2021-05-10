@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <launch>
+  <param name="use_sim_time" value="true"/>
+
+  <!-- create a father frame of world and odom, in order to be able to see both of them in rviz -->
+
+  <!-- bag 1-->
+  <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0.5982978940010071 -0.44282975792884827 -0.33036407828330994 0.007820934057235718 -0.020113913342356682 -0.644089937210083 0.7646453380584717 base_frame world 100" />
+  <node pkg="tf" type="static_transform_publisher" name="odom_transform" args="0 0 0 0 0 0 1 base_frame odom 100"/>
+
 
   <!-- some data of the robot that may be useful, taken from the project specification -->
   <param name="wheel_radius" type="double" value="0.1575"/>
@@ -23,13 +32,12 @@
   <param name="initial_pose_y" type="double" value="0"/>
   <param name="initial_pose_theta" type="double" value="0"/>
 
-  <!-- launch velocity estimator node -->
-  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator" args="gt_pose"/>
-
-
+  <!-- launch velocity estimator nodes, one for baseline/gear ratio estimation from odometry, the other from gt_pose -->
+  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator_estimated_from_scout_odom" args="scout_odom"/>
+  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator_estimated_from_gt_pose" args="gt_pose"/>
 
   <!-- node for parameters estimation -->
-  <!-- <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/> -->
+  <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/>
 
 
 </launch>
