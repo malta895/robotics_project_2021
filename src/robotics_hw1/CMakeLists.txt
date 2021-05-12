@@ -32,7 +32,7 @@ generate_messages(
 )
 
 generate_dynamic_reconfigure_options (
-  cfg/VelocityEstimator.cfg
+  cfg/OdometryCalculator.cfg
   )
 
 
@@ -49,11 +49,11 @@ include_directories(
 include ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(velocity_estimator src/velocity_estimator.cpp)
-target_link_libraries(velocity_estimator ${catkin_LIBRARIES})
-add_dependencies(velocity_estimator ${catkin_EXPORTED_TARGETS})
-add_dependencies(velocity_estimator ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(velocity_estimator ${PROJECT_NAME}_gencfg)
+add_executable(odometry_calculator src/odometry_calculator.cpp)
+target_link_libraries(odometry_calculator ${catkin_LIBRARIES})
+add_dependencies(odometry_calculator ${catkin_EXPORTED_TARGETS})
+add_dependencies(odometry_calculator ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(odometry_calculator ${PROJECT_NAME}_gencfg)
 
 add_executable(parameters_calibrator src/parameters_calibrator.cpp)
 target_link_libraries(parameters_calibrator ${catkin_LIBRARIES})

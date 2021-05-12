@@ -20,13 +20,6 @@
   <param name="apparent_baseline_from_gt_pose" type="double" value="1.0166236274601377"/>
   <param name="gear_ratio_from_gt_pose" type="double" value="0.02667141115720684"/>
 
-
-  <!-- initial pose of the robot, taken from gt_pose of bag1 -->
-  <!-- <param name="initial_pose_x" type="double" value="-0.8321421146392822"/> -->
-  <!-- <param name="initial_pose_y" type="double" value="0.42636168003082275"/> -->
-  <!-- <param name="initial_pose_theta" type="double" value="0.324720174074173"/> -->
-
-
   <!-- initial pose of the robot, taken from odom of bag1 -->
   <param name="initial_pose_x" type="double" value="0"/>
   <param name="initial_pose_y" type="double" value="0"/>

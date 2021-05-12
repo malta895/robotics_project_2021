@@ -1,103 +1,7 @@
-#include "boost/bind/bind.hpp"
-#include "boost/math/constants/constants.hpp"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/Twist.h"
-#include "geometry_msgs/Vector3Stamped.h"
-#include "nav_msgs/Odometry.h"
-#include "ros/forwards.h"
-#include "ros/publisher.h"
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include "include/odometry_calculator.hpp"
 
-#include "tf/transform_broadcaster.h"
-
-#include "dynamic_reconfigure/server.h"
-
-#include "message_filters/subscriber.h"
-#include "message_filters/sync_policies/exact_time.h"
-#include "message_filters/time_synchronizer.h"
-
-#include "robotics_hw1/IntegratedOdometry.h"
-#include "robotics_hw1/MotorSpeed.h"
-#include "robotics_hw1/VelocityEstimatorConfig.h"
-
-#include "geometry_msgs/TwistStamped.h"
-#include <iomanip>
-#include <sstream>
-#include <string>
-
-// I verified that in the bags the four messages have exactly synchronized
-// timestamps, so I can use the ExactTime policy
-typedef message_filters::sync_policies::ExactTime<
-    robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed,
-    robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed>
-    ExactTimePolicy;
-
-typedef message_filters::Synchronizer<ExactTimePolicy> ExactTimeSynchronizer;
-
-// let's take the double value of pi from boost library
-const double pi = boost::math::constants::pi<double>();
-
-enum OdometryIntegrationMethod { euler = 0, rungeKutta };
-const char *odometry_integration_method_name[] = {"Euler", "Runge-Kutta"};
-
-class VelocityEstimator {
-private:
-  const ros::NodeHandle node_handle;
-
-  ros::Publisher twist_stamped_publisher;
-  ros::Publisher odometry_publisher;
-  ros::Publisher odometry_custom_message_publisher;
-
-  tf2_ros::TransformBroadcaster transform_broadcaster;
-
-  boost::shared_ptr<ExactTimeSynchronizer> time_syncronizer_ptr;
-
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_left;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_front_right;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_left;
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> subscriber_rear_rigt;
-
-  boost::shared_ptr<
-      dynamic_reconfigure::Server<robotics_hw1::VelocityEstimatorConfig>>
-      dynamic_reconfigure_server_ptr;
-
-  const geometry_msgs::Pose initial_pose;
-  geometry_msgs::PoseStamped last_pose_stamped;
-  bool is_first_measurement = true;
-
-  const double real_baseline;
-  const double apparent_baseline;
-  const double wheel_radius;
-  const double gear_ratio;
-
-  // by default set euler as odometry integration method
-  OdometryIntegrationMethod odometry_integration_method = euler;
-
-  nav_msgs::Odometry calculateOdometry(const double &linear_speed,
-                                       const double &angular_speed,
-                                       const std_msgs::Header &header);
-
-public:
-  VelocityEstimator(ros::NodeHandle &node_handle, const double &initial_pose_x,
-                    const double &initial_pose_y,
-                    const double &initial_pose_theta,
-                    const double &wheel_radius, const double &real_baseline,
-                    const double &gear_ratio, const double &apparent_baseline,
-                    std::string &pose_or_odom);
-
-  void motorsSyncCallback(
-      const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
-      const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_right,
-      const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_left,
-      const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_right);
-
-  void dynamicReconfigureCallback(robotics_hw1::VelocityEstimatorConfig &config,
-                                  uint32_t level);
-};
-
-void VelocityEstimator::dynamicReconfigureCallback(
-    robotics_hw1::VelocityEstimatorConfig &config, uint32_t level) {
+void OdometryCalculator::dynamicReconfigureCallback(
+    robotics_hw1::OdometryCalculatorConfig &config, uint32_t level) {
 
   odometry_integration_method =
       OdometryIntegrationMethod(config.odometry_integration_method);
@@ -107,17 +11,24 @@ void VelocityEstimator::dynamicReconfigureCallback(
       odometry_integration_method_name[config.odometry_integration_method]);
 }
 
-nav_msgs::Odometry
-VelocityEstimator::calculateOdometry(const double &linear_speed,
-                                     const double &angular_speed,
-                                     const std_msgs::Header &current_header) {
+nav_msgs::Odometry OdometryCalculator::calculateOdometry(
+    const geometry_msgs::TwistStamped &current_twist) {
+
+
   nav_msgs::Odometry calculated_odometry;
-  calculated_odometry.header = current_header;
+  calculated_odometry.header = current_twist.header;
+
   calculated_odometry.header.frame_id = "odom";
   calculated_odometry.child_frame_id = "base_link";
 
-  const double delta_time =
-      (current_header.stamp - last_pose_stamped.header.stamp).toSec();
+  // the twist (i.e. the velocities) are to be kept
+  calculated_odometry.twist.twist = current_twist.twist;
+
+  const double &delta_time =
+      (current_twist.header.stamp - last_pose_stamped.header.stamp).toSec();
+
+  const double &linear_speed = current_twist.twist.linear.x;
+  const double &angular_speed = current_twist.twist.angular.z;
 
   // Let's get theta angle from the orientation quaternion
   tf::Quaternion quaternion(last_pose_stamped.pose.orientation.x,
@@ -125,10 +36,8 @@ VelocityEstimator::calculateOdometry(const double &linear_speed,
                             last_pose_stamped.pose.orientation.z,
                             last_pose_stamped.pose.orientation.w);
   double roll, pitch, yaw;
-  tf::Matrix3x3 quaternion_matrix(quaternion);
-  quaternion_matrix.getRPY(roll, pitch, yaw);
-
-  double &theta = yaw;
+  tf::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+  const double &theta = yaw;
 
   switch (odometry_integration_method) {
   case euler:
@@ -169,13 +78,10 @@ VelocityEstimator::calculateOdometry(const double &linear_speed,
     break;
   }
 
-  // the speed is assumed to be equal to the previous one
-  calculated_odometry.twist.twist.linear.x = linear_speed;
-  calculated_odometry.twist.twist.angular.z = angular_speed;
   return calculated_odometry;
 }
 
-void VelocityEstimator::motorsSyncCallback(
+void OdometryCalculator::motorsSyncCallback(
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_right,
     const robotics_hw1::MotorSpeedConstPtr &motor_speed_rear_left,
@@ -212,34 +118,33 @@ void VelocityEstimator::motorsSyncCallback(
   // it is not an ideal robot, we take the mean of the two measurements
 
   // the left rotation is registered as backwards, so we invert it
-  double rpm_left =
+  const double rpm_left =
       -(motor_speed_front_left->rpm + motor_speed_rear_left->rpm) / 2;
-  double rpm_right =
+  const double rpm_right =
       (motor_speed_front_right->rpm + motor_speed_rear_right->rpm) / 2;
 
-  double omega_l = (2 * pi) * ((rpm_left * gear_ratio) / 60);
-  double omega_r = (2 * pi) * ((rpm_right * gear_ratio) / 60);
+  const double omega_l = (2 * pi) * ((rpm_left * gear_ratio) / 60);
+  const double omega_r = (2 * pi) * ((rpm_right * gear_ratio) / 60);
 
   // from the rotational speeds and the wheel radius we can easily estimate the
   // linear speed
-  double linear_speed =
+  velocity_message.twist.linear.x =
       ((omega_l * wheel_radius) + (omega_r * wheel_radius)) / 2;
-  velocity_message.twist.linear.x = linear_speed;
 
   // we use the formula with the apparent baseline to get omega_z, i.e. the
   // angular speed of the robot when it turns
-  double angular_speed =
+  velocity_message.twist.angular.z =
       (-(omega_l * wheel_radius) + (omega_r * wheel_radius)) /
       apparent_baseline;
-  velocity_message.twist.angular.z = angular_speed;
 
   twist_stamped_publisher.publish(velocity_message);
 
-  const nav_msgs::Odometry odometry_message = calculateOdometry(
-      linear_speed, angular_speed, motor_speed_front_left->header);
+  const nav_msgs::Odometry odometry_message =
+      calculateOdometry(velocity_message);
 
   odometry_publisher.publish(odometry_message);
 
+  // build the custom message
   robotics_hw1::IntegratedOdometry integrated_odometry_custom_message;
   integrated_odometry_custom_message.odom = odometry_message;
   integrated_odometry_custom_message.method.data =
@@ -256,13 +161,12 @@ geometry_msgs::Pose pose_from_x_y_theta(const double &x, const double &y,
   geometry_msgs::Pose pose;
   pose.position.x = x;
   pose.position.y = y;
-  pose.position.z = 0.0;
   pose.orientation = tf::createQuaternionMsgFromYaw(theta);
 
   return pose;
 }
 
-VelocityEstimator::VelocityEstimator(
+OdometryCalculator::OdometryCalculator(
     ros::NodeHandle &node_handle, const double &initial_pose_x,
     const double &initial_pose_y, const double &initial_pose_theta,
     const double &wheel_radius, const double &real_baseline,
@@ -301,13 +205,13 @@ VelocityEstimator::VelocityEstimator(
 
   // register the callback. One placeholder for each function argument
   time_syncronizer_ptr->registerCallback(boost::bind(
-      &VelocityEstimator::motorsSyncCallback, this, _1, _2, _3, _4));
+      &OdometryCalculator::motorsSyncCallback, this, _1, _2, _3, _4));
 
   // set up the dynamic reconfigure server
   dynamic_reconfigure_server_ptr.reset(
-      new dynamic_reconfigure::Server<robotics_hw1::VelocityEstimatorConfig>);
+      new dynamic_reconfigure::Server<robotics_hw1::OdometryCalculatorConfig>);
   dynamic_reconfigure_server_ptr->setCallback(boost::bind(
-      &VelocityEstimator::dynamicReconfigureCallback, this, _1, _2));
+      &OdometryCalculator::dynamicReconfigureCallback, this, _1, _2));
 }
 
 double getDoubleParameter(const std::string &parameter_key,
@@ -354,7 +258,7 @@ int main(int argc, char **argv) {
   std::string pose_or_odom = args[1];
 
   ros::NodeHandle node_handle;
-  VelocityEstimator odometry_calculator(
+  OdometryCalculator odometry_calculator(
       node_handle, getDoubleParameter("initial_pose_x", node_handle),
       getDoubleParameter("initial_pose_y", node_handle),
       getDoubleParameter("initial_pose_theta", node_handle),
