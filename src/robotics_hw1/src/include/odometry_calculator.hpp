@@ -9,6 +9,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
+#include "std_srvs/Empty.h"
+#include "robotics_hw1/SetOdometry.h"
+
 #include "tf/transform_broadcaster.h"
 
 #include "dynamic_reconfigure/server.h"
@@ -48,6 +51,9 @@ private:
   ros::Publisher twist_stamped_publisher;
   ros::Publisher odometry_publisher;
   ros::Publisher odometry_custom_message_publisher;
+
+  ros::ServiceServer reset_odometry_service_server;
+  ros::ServiceServer set_odometry_service_server;
 
   tf2_ros::TransformBroadcaster transform_broadcaster;
 
@@ -95,4 +101,14 @@ public:
   void
   dynamicReconfigureCallback(robotics_hw1::OdometryCalculatorConfig &config,
                              uint32_t level);
+
+  // We use the empty request and response because we already know the value the
+  // odometry is to be reset to
+  bool
+  resetOdometryServiceCallback(const std_srvs::EmptyRequestConstPtr &request,
+                               const std_srvs::EmptyResponseConstPtr &response);
+
+  bool setOdometryServiceCallback(const robotics_hw1::SetOdometryRequestConstPtr &request,
+                                  robotics_hw1::SetOdometryResponse response
+                                  );
 };

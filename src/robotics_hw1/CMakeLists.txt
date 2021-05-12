@@ -24,6 +24,12 @@ add_message_files(
     IntegratedOdometry.msg
 )
 
+add_service_files(
+  FILES
+  SetOdometry.srv
+  )
+
+
 generate_messages(
   DEPENDENCIES
     std_msgs
