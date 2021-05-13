@@ -219,14 +219,18 @@ OdometryCalculator::OdometryCalculator(
 }
 
 bool OdometryCalculator::resetOdometryServiceCallback(
-    std_srvs::Empty::Request &request,
+    robotics_hw1::ResetOdometry::Request &request,
     robotics_hw1::ResetOdometry::Response &response) {
 
-  // this sets everything to zero, because the default constructor return a
-  // default zeroed Pose
-  last_pose_stamped.pose = geometry_msgs::Pose();
+  //set everything to zero
 
-  response.outcome = "Odometry reset succeded";
+  last_pose_stamped.pose.position.x = 0;
+  last_pose_stamped.pose.position.y = 0;
+  last_pose_stamped.pose.position.z = 0;
+
+  last_pose_stamped.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, 0);
+
+  response.outcome = "Odometry reset succeded. The pose and orientation have been set to zero";
 
   return true;
 }
@@ -237,6 +241,7 @@ bool OdometryCalculator::setOdometryServiceCallback(
 
   last_pose_stamped.pose = request.pose;
 
+  response.new_pose = request.pose;
   response.outcome = "Odometry set succeded";
 
   return true;
@@ -264,7 +269,7 @@ double getDoubleParameter(const std::string &parameter_key,
 
 int main(int argc, char **argv) {
 
-  ros::init(argc, argv, "velocity_estimator");
+  ros::init(argc, argv, "odometry_calculator");
 
   // we need our args
   ros::V_string args;

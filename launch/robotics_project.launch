@@ -26,11 +26,11 @@
   <param name="initial_pose_theta" type="double" value="0"/>
 
   <!-- launch velocity estimator nodes, one for baseline/gear ratio estimation from odometry, the other from gt_pose -->
-  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator_estimated_from_scout_odom" args="scout_odom"/>
-  <node pkg="robotics_hw1" type="velocity_estimator" name="velocity_estimator_estimated_from_gt_pose" args="gt_pose"/>
-
+  <node pkg="robotics_hw1" type="odometry_calculator" name="odometry_calculator_estimated_from_scout_odom" args="scout_odom"/>
+  <node pkg="robotics_hw1" type="odometry_calculator" name="odometry_calculator_estimated_from_gt_pose" args="gt_pose"/>
   <!-- node for parameters estimation -->
-  <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/>
+  <!-- <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/> -->
 
 
 </launch>
+

@@ -10,19 +10,19 @@ find_package(
   roscpp
   message_generation
   message_filters
-    nav_msgs
-    std_msgs
+  nav_msgs
+  std_msgs
   dynamic_reconfigure
   tf2_ros
-)
+  )
 
 add_message_files(
   FILES
-    MotorSpeed.msg
-    CalibratedParamsOdom.msg
-    CalibratedParamsGtPose.msg
-    IntegratedOdometry.msg
-)
+  MotorSpeed.msg
+  CalibratedParamsOdom.msg
+  CalibratedParamsGtPose.msg
+  IntegratedOdometry.msg
+  )
 
 add_service_files(
   FILES
@@ -33,10 +33,10 @@ add_service_files(
 
 generate_messages(
   DEPENDENCIES
-    std_msgs
-    nav_msgs
-    geometry_msgs
-)
+  std_msgs
+  nav_msgs
+  geometry_msgs
+  )
 
 generate_dynamic_reconfigure_options (
   cfg/OdometryCalculator.cfg
@@ -44,17 +44,18 @@ generate_dynamic_reconfigure_options (
 
 
 catkin_package(
+  LIBRARIES robotics_hw1
   CATKIN_DEPENDS
-    std_msgs
-    nav_msgs
-    message_runtime
-    tf2_ros
-)
+  std_msgs
+  nav_msgs
+  message_runtime
+  tf2_ros
+  )
 
 
 include_directories(
-include ${catkin_INCLUDE_DIRS}
-)
+  include ${catkin_INCLUDE_DIRS}
+  )
 
 add_executable(odometry_calculator src/odometry_calculator.cpp)
 target_link_libraries(odometry_calculator ${catkin_LIBRARIES})

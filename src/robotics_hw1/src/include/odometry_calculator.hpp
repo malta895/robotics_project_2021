@@ -106,7 +106,7 @@ public:
   // We use the empty request and response because we already know the value the
   // odometry is to be reset to
   bool
-  resetOdometryServiceCallback(std_srvs::Empty::Request &request,
+  resetOdometryServiceCallback(robotics_hw1::ResetOdometry::Request &request,
                                robotics_hw1::ResetOdometry::Response &response);
 
   bool
