@@ -1,5 +1,7 @@
-# We get the pose and return  an outcome as a string
-geometry_msgs/Pose pose
+# We get the pose as (x,y,theta)
+float64 x
+float64 y
+float64 theta
 ---
 # respond with the new pose for confirmation
 geometry_msgs/Pose new_pose
