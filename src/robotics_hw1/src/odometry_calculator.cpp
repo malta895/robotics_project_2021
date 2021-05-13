@@ -14,14 +14,13 @@ void OdometryCalculator::dynamicReconfigureCallback(
 nav_msgs::Odometry OdometryCalculator::calculateOdometry(
     const geometry_msgs::TwistStamped &current_twist) {
 
-
   nav_msgs::Odometry calculated_odometry;
   calculated_odometry.header = current_twist.header;
 
   calculated_odometry.header.frame_id = "odom";
   calculated_odometry.child_frame_id = "base_link";
 
-  // the twist (i.e. the velocities) are to be kept
+  // the twist (i.e. the velocities)
   calculated_odometry.twist.twist = current_twist.twist;
 
   const double &delta_time =
@@ -178,8 +177,12 @@ OdometryCalculator::OdometryCalculator(
       wheel_radius(wheel_radius), real_baseline(real_baseline),
       gear_ratio(gear_ratio), apparent_baseline(apparent_baseline) {
 
-  // subscribe to the motor speed topics TODO remove hard coding and put
-  // parameters/argvs with topics names
+  // register the services
+  reset_odometry_service_server = node_handle.advertiseService(
+      "reset_odometry", &OdometryCalculator::resetOdometryServiceCallback,
+      this);
+  set_odometry_service_server = node_handle.advertiseService(
+      "set_odometry", &OdometryCalculator::setOdometryServiceCallback, this);
 
   subscriber_front_right.subscribe(node_handle, "/motor_speed_fr", 100);
   subscriber_front_left.subscribe(node_handle, "/motor_speed_fl", 100);
@@ -190,7 +193,6 @@ OdometryCalculator::OdometryCalculator(
   twist_stamped_publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
       "/robot_twisted_stamped", 10);
 
-  // TODO probably this is useless, the last one is enough
   odometry_publisher = node_handle.advertise<nav_msgs::Odometry>(
       "/scout_integrated_odom/from_" + pose_or_odom, 10);
 
@@ -212,6 +214,32 @@ OdometryCalculator::OdometryCalculator(
       new dynamic_reconfigure::Server<robotics_hw1::OdometryCalculatorConfig>);
   dynamic_reconfigure_server_ptr->setCallback(boost::bind(
       &OdometryCalculator::dynamicReconfigureCallback, this, _1, _2));
+
+
+}
+
+bool OdometryCalculator::resetOdometryServiceCallback(
+    std_srvs::Empty::Request &request,
+    robotics_hw1::ResetOdometry::Response &response) {
+
+  // this sets everything to zero, because the default constructor return a
+  // default zeroed Pose
+  last_pose_stamped.pose = geometry_msgs::Pose();
+
+  response.outcome = "Odometry reset succeded";
+
+  return true;
+}
+
+bool OdometryCalculator::setOdometryServiceCallback(
+    robotics_hw1::SetOdometry::Request &request,
+    robotics_hw1::SetOdometry::Response &response) {
+
+  last_pose_stamped.pose = request.pose;
+
+  response.outcome = "Odometry set succeded";
+
+  return true;
 }
 
 double getDoubleParameter(const std::string &parameter_key,

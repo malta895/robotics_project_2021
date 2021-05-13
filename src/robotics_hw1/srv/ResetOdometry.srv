@@ -1,0 +1,3 @@
+# we don't need to update anything, so we don't take any Request, but we show an outcome as Response
+---
+string outcome

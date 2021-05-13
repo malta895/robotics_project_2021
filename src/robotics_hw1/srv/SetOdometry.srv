@@ -1,3 +1,4 @@
+# We get the pose and return  an outcome as a string
 geometry_msgs/Pose pose
 ---
-geometry_msgs/Pose resulting_pose
+string outcome # can be either success or an error to show to the client

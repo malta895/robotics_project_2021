@@ -9,8 +9,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
-#include "std_srvs/Empty.h"
+#include "robotics_hw1/ResetOdometry.h"
 #include "robotics_hw1/SetOdometry.h"
+#include "std_srvs/Empty.h"
 
 #include "tf/transform_broadcaster.h"
 
@@ -105,10 +106,10 @@ public:
   // We use the empty request and response because we already know the value the
   // odometry is to be reset to
   bool
-  resetOdometryServiceCallback(const std_srvs::EmptyRequestConstPtr &request,
-                               const std_srvs::EmptyResponseConstPtr &response);
+  resetOdometryServiceCallback(std_srvs::Empty::Request &request,
+                               robotics_hw1::ResetOdometry::Response &response);
 
-  bool setOdometryServiceCallback(const robotics_hw1::SetOdometryRequestConstPtr &request,
-                                  robotics_hw1::SetOdometryResponse response
-                                  );
+  bool
+  setOdometryServiceCallback(robotics_hw1::SetOdometry::Request &request,
+                             robotics_hw1::SetOdometry::Response &response);
 };
