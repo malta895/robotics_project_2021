@@ -170,7 +170,7 @@ OdometryCalculator::OdometryCalculator(
     const double &initial_pose_y, const double &initial_pose_theta,
     const double &wheel_radius, const double &real_baseline,
     const double &gear_ratio, const double &apparent_baseline,
-    std::string &pose_or_odom)
+    const std::string &pose_or_odom)
     : node_handle(node_handle),
       initial_pose(createPoseMsgFromXYTheta(initial_pose_x, initial_pose_y,
                                             initial_pose_theta)),
@@ -189,8 +189,9 @@ OdometryCalculator::OdometryCalculator(
   subscriber_rear_rigt.subscribe(node_handle, "/motor_speed_rr", 100);
   subscriber_rear_left.subscribe(node_handle, "/motor_speed_rl", 100);
 
-  // publish the topics. We append also the source since we run the two
-  // simoultaneously in the launch file
+  // publish the topics. Since the nodes are run simoultaneously we append the
+  // source of estimated parameters to avoid that more nodes publish to
+  // the same topic
   twist_stamped_publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
       "/robot_twisted_stamped/from_" + pose_or_odom, 10);
 
@@ -201,12 +202,12 @@ OdometryCalculator::OdometryCalculator(
       node_handle.advertise<robotics_hw1::IntegratedOdometry>(
           "/scout_integrated_odom_custom/from_" + pose_or_odom, 10);
 
-  // initialize the time syncronizer
+  // initialize the time syncronizer to get the speed of each wheel
   time_syncronizer_ptr.reset(new ExactTimeSynchronizer(
       ExactTimePolicy(100), subscriber_front_left, subscriber_front_right,
       subscriber_rear_left, subscriber_rear_rigt));
 
-  // register the callback. One placeholder for each function argument
+  // register the syncronizer callback
   time_syncronizer_ptr->registerCallback(boost::bind(
       &OdometryCalculator::motorsSyncCallback, this, _1, _2, _3, _4));
 
@@ -226,7 +227,7 @@ bool OdometryCalculator::resetOdometryServiceCallback(
   last_pose_stamped.pose = createPoseMsgFromXYTheta(0, 0, 0);
 
   response.outcome =
-      "Odometry reset succeded. The pose and orientation have been set to zero";
+      "Odometry reset succeeded. The pose and orientation have been set to zero";
 
   return true;
 }
@@ -235,12 +236,16 @@ bool OdometryCalculator::setOdometryServiceCallback(
     robotics_hw1::SetOdometry::Request &request,
     robotics_hw1::SetOdometry::Response &response) {
 
+  // calculate the pose
   const geometry_msgs::Pose &new_pose =
       createPoseMsgFromXYTheta(request.x, request.y, request.theta);
+
+  // set it to the last_pose_stamped variable, so that it will be used in the
+  // next computations
   last_pose_stamped.pose = new_pose;
 
+  // respond with the new pose as a confirmation to the client
   response.new_pose = new_pose;
-
   response.outcome = "The new Odometry has been set successfully";
 
   return true;

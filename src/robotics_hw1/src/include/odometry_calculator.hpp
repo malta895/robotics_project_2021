@@ -91,7 +91,7 @@ public:
                      const double &initial_pose_theta,
                      const double &wheel_radius, const double &real_baseline,
                      const double &gear_ratio, const double &apparent_baseline,
-                     std::string &pose_or_odom);
+                     const std::string &pose_or_odom);
 
   void motorsSyncCallback(
       const robotics_hw1::MotorSpeedConstPtr &motor_speed_front_left,
