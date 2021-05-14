@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Grid1/Offset1
+        - /Odometry1
+        - /Pose1
         - /PoseWithCovariance1/Covariance1
         - /Odometry2/Shape1
         - /Odometry2/Covariance1
@@ -73,7 +75,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 2000
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -89,7 +91,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /scout_odom
       Unreliable: true
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -152,7 +154,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 1000
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -166,9 +168,9 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /scout_integrated_odom/from_scout_odom
+      Topic: /odometry_calculator_estimated_from_scout_odom/integrated_odom
       Unreliable: false
-      Value: false
+      Value: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -200,7 +202,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /scout_integrated_odom/from_gt_pose
+      Topic: /odometry_calculator_estimated_from_gt_pose/integrated_odom
       Unreliable: false
       Value: true
   Enabled: true
@@ -232,26 +234,23 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 17.369640350341797
+      Class: rviz/FPS
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0.3070300221443176
-        Y: -0.698115348815918
-        Z: -0.14288991689682007
-      Focal Shape Fixed Size: false
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5597963333129883
+      Pitch: 1.020796537399292
+      Position:
+        X: -0.20619922876358032
+        Y: 3.3467564582824707
+        Z: 14.745306968688965
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 2.9203927516937256
+      Value: FPS (rviz)
+      Yaw: 4.756600379943848
     Saved: ~
 Window Geometry:
   Displays:

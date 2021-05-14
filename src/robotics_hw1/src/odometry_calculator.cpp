@@ -17,7 +17,6 @@ nav_msgs::Odometry OdometryCalculator::calculateOdometry(
   nav_msgs::Odometry calculated_odometry;
   calculated_odometry.header = current_twist.header;
 
-  calculated_odometry.header.frame_id = "odom";
   calculated_odometry.child_frame_id = "base_link";
 
   // the twist (i.e. the velocities)
@@ -102,9 +101,13 @@ void OdometryCalculator::motorsSyncCallback(
 
   geometry_msgs::TwistStamped velocity_message;
 
+
   // take the Header from one of the messages, no matter which one, they are all
   // the same because of ExactTimePolicy
-  velocity_message.header = motor_speed_front_left->header;
+  std_msgs::Header header = motor_speed_front_left->header;
+  header.frame_id = "odom";
+
+  velocity_message.header = header;
 
   if (is_first_measurement) {
     last_pose_stamped.header = velocity_message.header;
@@ -152,7 +155,19 @@ void OdometryCalculator::motorsSyncCallback(
   odometry_custom_message_publisher.publish(integrated_odometry_custom_message);
 
   last_pose_stamped.pose = odometry_message.pose.pose;
-  last_pose_stamped.header = odometry_message.header;
+  last_pose_stamped.header = header;
+
+  geometry_msgs::TransformStamped transform_stamped;
+  transform_stamped.header = header;
+  transform_stamped.child_frame_id = "base_link";
+
+  transform_stamped.transform.rotation = odometry_message.pose.pose.orientation;
+  transform_stamped.transform.translation.x =
+      odometry_message.pose.pose.position.x;
+  transform_stamped.transform.translation.y =
+      odometry_message.pose.pose.position.y;
+
+  transform_broadcaster.sendTransform(transform_stamped);
 }
 
 geometry_msgs::Pose createPoseMsgFromXYTheta(const double &x, const double &y,
@@ -177,30 +192,27 @@ OdometryCalculator::OdometryCalculator(
       wheel_radius(wheel_radius), real_baseline(real_baseline),
       gear_ratio(gear_ratio), apparent_baseline(apparent_baseline) {
 
-  // register the services
-  reset_odometry_service_server = node_handle.advertiseService(
-      "reset_odometry", &OdometryCalculator::resetOdometryServiceCallback,
-      this);
-  set_odometry_service_server = node_handle.advertiseService(
-      "set_odometry", &OdometryCalculator::setOdometryServiceCallback, this);
-
   subscriber_front_right.subscribe(node_handle, "/motor_speed_fr", 100);
   subscriber_front_left.subscribe(node_handle, "/motor_speed_fl", 100);
   subscriber_rear_rigt.subscribe(node_handle, "/motor_speed_rr", 100);
   subscriber_rear_left.subscribe(node_handle, "/motor_speed_rl", 100);
 
-  // publish the topics. Since the nodes are run simoultaneously we append the
-  // source of estimated parameters to avoid that more nodes publish to
-  // the same topic
+  // I put the node name in the topic names to avoid conflicts in case more
+  // instances are run at the same time
+  const std::string node_name = ros::this_node::getName();
+
+  // publish the topics.
   twist_stamped_publisher = node_handle.advertise<geometry_msgs::TwistStamped>(
-      "/robot_twisted_stamped/from_" + pose_or_odom, 10);
+      node_name + "/twist_stamped", 10);
 
+  // the odometry
   odometry_publisher = node_handle.advertise<nav_msgs::Odometry>(
-      "/scout_integrated_odom/from_" + pose_or_odom, 10);
+      node_name + "/integrated_odom", 10);
 
+  // the custom message, contains odometry and method used as a string
   odometry_custom_message_publisher =
       node_handle.advertise<robotics_hw1::IntegratedOdometry>(
-          "/scout_integrated_odom_custom/from_" + pose_or_odom, 10);
+          node_name + "/integrated_odom_and_method", 10);
 
   // initialize the time syncronizer to get the speed of each wheel
   time_syncronizer_ptr.reset(new ExactTimeSynchronizer(
@@ -216,6 +228,15 @@ OdometryCalculator::OdometryCalculator(
       new dynamic_reconfigure::Server<robotics_hw1::OdometryCalculatorConfig>);
   dynamic_reconfigure_server_ptr->setCallback(boost::bind(
       &OdometryCalculator::dynamicReconfigureCallback, this, _1, _2));
+
+  // register the services. I put the name of the node in case more instances
+  // are running at once
+  reset_odometry_service_server = node_handle.advertiseService(
+      node_name + "/reset_odometry",
+      &OdometryCalculator::resetOdometryServiceCallback, this);
+  set_odometry_service_server = node_handle.advertiseService(
+      node_name + "/set_odometry",
+      &OdometryCalculator::setOdometryServiceCallback, this);
 }
 
 bool OdometryCalculator::resetOdometryServiceCallback(
@@ -226,8 +247,8 @@ bool OdometryCalculator::resetOdometryServiceCallback(
 
   last_pose_stamped.pose = createPoseMsgFromXYTheta(0, 0, 0);
 
-  response.outcome =
-      "Odometry reset succeeded. The pose and orientation have been set to zero";
+  response.outcome = "Odometry reset succeeded. The pose and orientation have "
+                     "been set to zero";
 
   return true;
 }
@@ -292,7 +313,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::string pose_or_odom = args[1];
+  const std::string &pose_or_odom = args[1];
 
   ros::NodeHandle node_handle;
   OdometryCalculator odometry_calculator(
