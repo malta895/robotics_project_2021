@@ -17,7 +17,7 @@ nav_msgs::Odometry OdometryCalculator::calculateOdometry(
   nav_msgs::Odometry calculated_odometry;
   calculated_odometry.header = current_twist.header;
 
-  calculated_odometry.child_frame_id = "base_link";
+  calculated_odometry.child_frame_id = pose_or_odom + "_link";
 
   // the twist (i.e. the velocities)
   calculated_odometry.twist.twist = current_twist.twist;
@@ -101,7 +101,6 @@ void OdometryCalculator::motorsSyncCallback(
 
   geometry_msgs::TwistStamped velocity_message;
 
-
   // take the Header from one of the messages, no matter which one, they are all
   // the same because of ExactTimePolicy
   std_msgs::Header header = motor_speed_front_left->header;
@@ -159,7 +158,7 @@ void OdometryCalculator::motorsSyncCallback(
 
   geometry_msgs::TransformStamped transform_stamped;
   transform_stamped.header = header;
-  transform_stamped.child_frame_id = "base_link";
+  transform_stamped.child_frame_id = pose_or_odom + "_link";
 
   transform_stamped.transform.rotation = odometry_message.pose.pose.orientation;
   transform_stamped.transform.translation.x =
@@ -190,7 +189,8 @@ OdometryCalculator::OdometryCalculator(
       initial_pose(createPoseMsgFromXYTheta(initial_pose_x, initial_pose_y,
                                             initial_pose_theta)),
       wheel_radius(wheel_radius), real_baseline(real_baseline),
-      gear_ratio(gear_ratio), apparent_baseline(apparent_baseline) {
+      gear_ratio(gear_ratio), apparent_baseline(apparent_baseline),
+      pose_or_odom(pose_or_odom) {
 
   subscriber_front_right.subscribe(node_handle, "/motor_speed_fr", 100);
   subscriber_front_left.subscribe(node_handle, "/motor_speed_fl", 100);

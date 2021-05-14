@@ -78,6 +78,7 @@ private:
   const double apparent_baseline;
   const double wheel_radius;
   const double gear_ratio;
+  const std::string pose_or_odom;
 
   // by default set euler as odometry integration method
   OdometryIntegrationMethod odometry_integration_method = euler;
