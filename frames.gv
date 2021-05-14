@@ -1,8 +1,10 @@
 digraph G {
-"base_frame" -> "world"[label=" Broadcaster: /world_transform\nAverage rate: 10.127\nBuffer length: 4.937\nMost recent transform: 1617792127.178\nOldest transform: 1617792122.241\n"];
-"base_frame" -> "odom"[label=" Broadcaster: /odom_transform\nAverage rate: 10.127\nBuffer length: 4.937\nMost recent transform: 1617792127.178\nOldest transform: 1617792122.241\n"];
+"odom" -> "gt_pose_link"[label=" Broadcaster: /odometry_calculator_estimated_from_gt_pose\nAverage rate: 50.202\nBuffer length: 4.96\nMost recent transform: 1617792014.496\nOldest transform: 1617792009.536\n"];
+"base_frame" -> "odom"[label=" Broadcaster: /odom_transform\nAverage rate: 10.121\nBuffer length: 4.841\nMost recent transform: 1617792014.526\nOldest transform: 1617792009.684\n"];
+"odom" -> "scout_odom_link"[label=" Broadcaster: /odometry_calculator_estimated_from_scout_odom\nAverage rate: 50.202\nBuffer length: 4.96\nMost recent transform: 1617792014.496\nOldest transform: 1617792009.536\n"];
+"base_frame" -> "world"[label=" Broadcaster: /world_transform\nAverage rate: 10.121\nBuffer length: 4.841\nMost recent transform: 1617792014.526\nOldest transform: 1617792009.684\n"];
 edge [style=invis];
  subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
-"Recorded at time: 1617792127.1387603"[ shape=plaintext ] ;
+"Recorded at time: 1617792014.5066288"[ shape=plaintext ] ;
 }->"base_frame";
 }

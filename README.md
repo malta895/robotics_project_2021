@@ -12,8 +12,6 @@ Most important files include:
 
 *`frames.pdf`: The frames tree obtained with the command `rosrun tf2_tools view_frames.py`
 
-* `rviz_config.rviz`: The configuration of rviz I used.
-
 * `src/robotics_hw1/cfg/OdometryCalculator.cfg`: The config file for the dynamic reconfigure regarding the odometry integration method
 
 * `src/robotics_hw1/msg/CalibratedParamsGtPose.msg`, `src/robotics_hw1/msg/CalibratedParamsOdom.msg`: Some custom message I used to figure out the calibrated apparent baseline and gear ratio. They are not to be considered part of the project, but I leave them to explain how I got the estimated values.
@@ -21,9 +19,8 @@ Most important files include:
 * `src/robotics_hw1/msg/IntegratedOdometry.msg`: The custom message with the integration method and the odometry, as requested by the specifications
 * `src/robotics_hw1/src/parameters_calibrator.cpp`: The node I used to calibrate gear ratio and apparent baseline, not to be considered part of the project
 
-* `src/robotics_hw1/src/velocity_estimator.cpp`: The principal node of the project
+* `src/robotics_hw1/src/include/velocity_estimator.hpp`, `src/robotics_hw1/src/velocity_estimator.cpp`: The node that implements the functionalities required by the project. The header file contains the class definition, the cpp file implements it. I decided to split the file for more clean and readable code.
 
-<!-- TODO continue -->
 ## Name of the parameters
 
 The following parameters are used to set the start point of the object and to set the base name of the topic:  
@@ -32,7 +29,7 @@ The following parameters are used to set the start point of the object and to se
 * `wheel_radius` and `real_baseline` as given by the project specs.
 * `apparent_baseline_from_scout_odom`, `gear_ratio_from_scout_odom`, `apparent_baseline_from_gt_pose`, `gear_ratio_from_gt_pose`: The estimated parameters, respectively starting from the odometry given by the robot, and from the ground truth pose.
 
-All the parameters mentioned above are set in the `project1.launch` file.
+All the parameters mentioned above are set in the launch file.
 
 ## Description of how to start/use the nodes
 
@@ -40,11 +37,11 @@ From a terminal in the root folder of the project:
 
     catkin_make
     source devel/setup.bash
-    roslaunch launch/project1.launch
+    roslaunch launch/robotics_project.launch
     
 ## Structure of the *tf* tree
 
-See the file `frames.pdf`
+![See frames.pdf](frames.png "Structure of the tf tree")
 
 ## Structure of the custom message
 
