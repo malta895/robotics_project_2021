@@ -10,10 +10,12 @@
   <node pkg="tf" type="static_transform_publisher" name="odom_transform" args="0 0 0 0 0 0 1 base_frame odom 100"/>
 
 
-  <!-- some data of the robot that may be useful, taken from the project specification -->
+  <!-- some data of the robot that may be useful, taken from the project specifications -->
   <param name="wheel_radius" type="double" value="0.1575"/>
   <param name="real_baseline" type="double" value="0.583"/>
 
+
+  <!-- the estimated parameters -->
   <param name="apparent_baseline_from_scout_odom" type="double" value="1.0348803417434809"/>
   <param name="gear_ratio_from_scout_odom" type="double" value="0.02616661880304867"/>
 
@@ -28,9 +30,9 @@
   <!-- launch velocity estimator nodes, one for baseline/gear ratio estimation from odometry, the other from gt_pose -->
   <node pkg="robotics_hw1" type="odometry_calculator" name="odometry_calculator_estimated_from_scout_odom" args="scout_odom"/>
   <node pkg="robotics_hw1" type="odometry_calculator" name="odometry_calculator_estimated_from_gt_pose" args="gt_pose"/>
+
   <!-- node for parameters estimation -->
   <!-- <node pkg="robotics_hw1" type="parameters_calibrator" name="parameters_calibrator"/> -->
 
 
 </launch>
-

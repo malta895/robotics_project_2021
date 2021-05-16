@@ -10,7 +10,7 @@ Most important files include:
 
 * `launch/robotics_project.launch`: A launch file which launches every necessary node to comply with project specifications.
 
-*`frames.pdf`: The frames tree obtained with the command `rosrun tf2_tools view_frames.py`
+* `frames.pdf`: The frames tree obtained with the command `rosrun tf2_tools view_frames.py`
 
 * `src/robotics_hw1/cfg/OdometryCalculator.cfg`: The config file for the dynamic reconfigure regarding the odometry integration method
 
@@ -20,6 +20,8 @@ Most important files include:
 * `src/robotics_hw1/src/parameters_calibrator.cpp`: The node I used to calibrate gear ratio and apparent baseline, not to be considered part of the project
 
 * `src/robotics_hw1/src/include/velocity_estimator.hpp`, `src/robotics_hw1/src/velocity_estimator.cpp`: The node that implements the functionalities required by the project. The header file contains the class definition, the cpp file implements it. I decided to split the file for more clean and readable code.
+
+* `/home/malta/git-projects/robotics_project_2021/src/robotics_hw1/srv/SetOdometry.srv`, `/home/malta/git-projects/robotics_project_2021/src/robotics_hw1/srv/ResetOdometry.srv`: The service file used to implement the resetting or setting of the odometry to any given pose.
 
 ## Name of the parameters
 
@@ -39,6 +41,11 @@ From a terminal in the root folder of the project:
     source devel/setup.bash
     roslaunch launch/robotics_project.launch
     
+The node will be launched twice, with two different names: one with the parameters estimated from the `/scout_odom`, the other one with the parameters estimated from `/gt_pose`.
+This way I could compare the outputs of the resulting odometries.
+
+Since the nodes have different names, and all the topics are published with name based on the node name, I am sure there are no name conflicts between the two nodes even if running at the same time.
+    
 ## Structure of the *tf* tree
 
 ![See frames.pdf](frames.png "Structure of the tf tree")
@@ -54,7 +61,7 @@ As per the project specification, the custom message is structured as follows:
 
 The field `method` can either have the value "Euler" or "Runge-Kutta", according to the method used to integrate the odometry.
 
-The message is published under the topic `/scout_integrated_odom_custom`
+The message is published under the topic `/scout_integrated_odom3_custom`
 
 ## Other infos
 
