@@ -61,10 +61,9 @@ As per the project specification, the custom message is structured as follows:
 
 The field `method` can either have the value "Euler" or "Runge-Kutta", according to the method used to integrate the odometry.
 
-The message is published under the topic `/scout_integrated_odom3_custom`
-
+The message is published under the topic `/odometry_calculator_estimated_from_*pose_or_odom*/integrated_odom_and_method`
 ## Other infos
 
-I estimated the `apparent baseline` and `gear ratio` values from both the odometry and ground truth pose. For this purpose I created a dedicated node, `parameters_calibrator`. The node, by using message filters, calculates for each syncronization step the value of such parameters, and then it incrementally calculates the mean in order to get a value as close as possible to the real one. In order to get a cleaner estimation I imposed bounds on the values that could contribute to the mean, with the help of plotting tools like `rviz`.
+I estimated the `apparent baseline` and `gear ratio` values from both the odometry and ground truth pose. For this purpose I created a dedicated node, `parameters_calibrator`. The node, by using message filters, calculates value of such parameters, and then it incrementally calculates the mean in order to get a value as close as possible to the real one. In order to get a cleaner estimation I imposed bounds on the values that could contribute to the mean, with the help of plotting tools like `rviz`.
 
-Then, by observing the plotted odometries, I verified that the value calculated starting from the `/scout_odom` is accurate: the resulting odometry is practically overlapped to the one given by the robot; on the other hand, the odometry resulting from the parameters estimated from the ground truth pose diverges a lot from the reference one, and its track follows more or less the one I could observe by plotting the `/gt_pose` topic. This is expected given the lack of precision of the odometry measured by the robot itself, as suggested during the project presentation.
+Then, by observing the plotted odometries, I verified that the value calculated starting from the `/scout_odom` is accurate: the resulting odometry is practically overlapped to the one given by the robot; on the other hand, the odometry resulting from the parameters estimated from the ground truth pose diverges a lot from the reference one, and its track follows more or less the one I could observe by plotting the `/gt_pose` topic. This is expected given the lack of precision of the odometry measured by the robot itself, as suggested during the project presentation, and it testifies that the found apparent baseline gives an odometry very close to the real one.
