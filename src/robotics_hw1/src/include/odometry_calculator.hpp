@@ -81,6 +81,7 @@ private:
   const std::string pose_or_odom;
 
   // by default set euler as odometry integration method
+  // Then this value can be changed with dynamic reconfigure
   OdometryIntegrationMethod odometry_integration_method = euler;
 
   nav_msgs::Odometry
@@ -104,8 +105,6 @@ public:
   dynamicReconfigureCallback(robotics_hw1::OdometryCalculatorConfig &config,
                              uint32_t level);
 
-  // We use the empty request and response because we already know the value the
-  // odometry is to be reset to
   bool
   resetOdometryServiceCallback(robotics_hw1::ResetOdometry::Request &request,
                                robotics_hw1::ResetOdometry::Response &response);

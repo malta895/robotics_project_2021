@@ -17,6 +17,7 @@ nav_msgs::Odometry OdometryCalculator::calculateOdometry(
   nav_msgs::Odometry calculated_odometry;
   calculated_odometry.header = current_twist.header;
 
+  // this makes the child frame name unique, to avoid conflicts when running 2 nodes at once
   calculated_odometry.child_frame_id = pose_or_odom + "_link";
 
   // the twist (i.e. the velocities)
